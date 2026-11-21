@@ -82,12 +82,12 @@ b,strong,.v{font-weight:700}
    <div class="rtabs" id="tabs"><b data-i="0">Year</b><b data-i="1">Month</b><b data-i="2">Week</b><b data-i="3">Day</b></div>
   </div>
   <div class="cwrap"><canvas id="cv"></canvas><div class="ld" id="ld">loading…</div></div>
-  <div class="legend">
-   <span><i style="background:var(--cy)"></i>Capacity in use: <b id="lCadr">–</b></span>
-   <span><i style="background:var(--ok)"></i>Indoor PM2.5: <b id="lIn">–</b></span>
-   <span><i style="background:var(--org)"></i>Outdoor PM2.5: <b id="lOut">–</b></span>
-  </div>
   <div class="hint"><kbd>▲▼</kbd> zoom (year · month · week · day) &nbsp;·&nbsp; <kbd>◀▶</kbd> move through time</div>
+ </div>
+ <div class="legend">
+  <span><i style="background:var(--cy)"></i>Capacity in use: <b id="lCadr">–</b></span>
+  <span><i style="background:var(--ok)"></i>Indoor PM2.5: <b id="lIn">–</b></span>
+  <span><i style="background:var(--org)"></i>Outdoor PM2.5: <b id="lOut">–</b></span>
  </div>
 </div>
 <script>
@@ -148,6 +148,7 @@ function draw(){
  var dpr=window.devicePixelRatio||1,W=Math.max(box.width,10),H=Math.max(box.height,10);
  cv.width=W*dpr;cv.height=H*dpr;
  var g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+ g.fillStyle=col("--bg","#1a1b26");g.globalAlpha=.88;g.fillRect(0,0,W,H);g.globalAlpha=1;
  var S=DATA.series||{},cadr=S.cadr||[],ind=S.indoor||[],out=S.outdoor||[];
  var win=DATA.window||{from:winStart(),to:winEnd()};
  var t0=win.from,t1=win.to||t0+1;
@@ -159,7 +160,7 @@ function draw(){
  var fs=parseFloat(getComputedStyle(cv).fontSize)||13,F=fs*0.62;
  var padL=F*4.2,padR=F*4.2,padT=F*0.8,padB=F*2.4;
  var x0=padL,x1=W-padR,y0=H-padB,y1=padT;
- var muted=col("--mu","#565f89");
+ var muted=col("--dt","#b4bee6");
  var cCadr=col("--cy","#7aa2f7"),cIn=col("--ok","#9ece6a"),cOut=col("--org","#eb927b");
  var X=function(t){return x0+(x1-x0)*((t-t0)/((t1-t0)||1));};
  var YL=function(v){return y0-(y0-y1)*(v/cadrMax);};
