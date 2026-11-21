@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Board-AirQ · Qualità aria vs Purificatori</title>
+<meta name="robots" content="noindex">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<script>/* mode + instant theme (last pushed Omarchy theme from cache, before first paint) */
+if(/tv\.html$/.test(location.pathname)||/[?&]tv(=1)?(&|$)/.test(location.search))document.documentElement.classList.add("tv");
+try{const t=JSON.parse(localStorage.getItem("airq.theme")||"null");if(t&&t.v){const r=document.documentElement.style;for(const k in t.v)if(t.v[k])r.setProperty(k,t.v[k]);r.colorScheme=t.cs||"dark";
+ if(t.wp&&!/\.(mp4|webm|mkv|mov)(\?|$)/i.test(t.wp))r.setProperty("--omarchy-wallpaper",'url("'+t.wp+'")');}}catch(e){}
+</script>
+<link rel="stylesheet" id="omarchy-theme" href="/theme/omarchy.css" media="print" onload="this.media='all'">
+<style>
+/* Omarchy board style, same token system as Studio Dubai / Van Hunter. Every colour comes from the
+   live Omarchy theme (/theme: omarchy.css vars + /theme/events push); literals below are fallbacks only. */
+:root{--px:clamp(.55px,min(calc(100vh / 1080),calc(100vw / 1700)),2px);
+ --bg:var(--omarchy-background,#1a1b26);--sf:var(--omarchy-lighter-background,var(--omarchy-background,#1a1b26));
+ --cy:var(--omarchy-accent,#7aa2f7);--mg:var(--omarchy-accent2,#bb9af7);
+ --tx:var(--omarchy-foreground,#a9b1d6);--mu:var(--omarchy-muted,#565f89);--ok:var(--omarchy-green,#9ece6a);
+ --warn:var(--omarchy-yellow,#e0af68);--org:var(--omarchy-orange,#eb927b);--no:var(--omarchy-red,#f7768e);
+ --hi:var(--omarchy-bright-foreground,#c0caf5);--dt:var(--omarchy-light-foreground,#b4bee6);--bd:var(--omarchy-muted,#565f89);
+ --ttl:var(--omarchy-bright-cyan,var(--omarchy-cyan,var(--cy)));
+ --win-alpha:var(--omarchy-window-opacity,.75);--win:color-mix(in srgb,var(--bg) calc(var(--win-alpha)*100%),transparent);
+ --font:var(--omarchy-font,var(--omarchy-font-family,monospace))}
+html.tv{--px:calc(100vh / 1080)}
+*,*::before,*::after{box-sizing:border-box;border-radius:0!important;box-shadow:none!important;text-shadow:none!important}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);overflow:hidden;font-family:var(--font);font-size:calc(26 * var(--px));line-height:1.25;transition:background-color .6s,color .6s}
+html.tv body{cursor:none}
+b,strong,.v{font-weight:700}
+#wp{position:fixed;inset:0;z-index:0;background:var(--bg) var(--omarchy-wallpaper,none) center/cover no-repeat}
+.bar{position:relative;z-index:5;height:calc(52 * var(--px));display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 calc(32 * var(--px));font-size:calc(24 * var(--px));background:var(--win);color:var(--tx)}
+.bar .l{justify-self:start;white-space:nowrap}.bar .l .a{color:var(--cy)}
+.bar .c{justify-self:center;font-weight:700;white-space:nowrap}
+.bar .r{justify-self:end;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.bar .r.err{color:var(--no)}
+.page{position:absolute;z-index:1;top:calc(52 * var(--px));left:0;right:0;bottom:0;padding:calc(32 * var(--px));display:flex;flex-direction:column;gap:calc(20 * var(--px))}
+.panel{position:relative;background:var(--win);--box-bw:calc(2 * var(--px));--box-border:var(--bd);border:var(--box-bw) solid var(--box-border);border-top-color:transparent;padding:calc(18 * var(--px)) calc(22 * var(--px));margin-top:calc(12 * var(--px))}
+.panel::before{content:"";position:absolute;left:calc(0px - var(--box-bw));right:calc(0px - var(--box-bw));top:calc(0px - var(--box-bw));height:var(--box-bw);background:var(--box-border);pointer-events:none}
+.panel>.t{position:absolute;left:calc(14 * var(--px) - var(--box-bw));top:calc(0px - var(--box-bw));transform:translateY(calc(-50% + var(--box-bw) / 2));padding:0 calc(8 * var(--px));background:var(--bg);color:var(--ttl);font-size:calc(19 * var(--px));font-weight:400;line-height:calc(22 * var(--px));height:calc(22 * var(--px));white-space:nowrap;z-index:2;display:block}
+.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(20 * var(--px))}
+.big .v{font-size:calc(96 * var(--px));line-height:1.05;color:var(--cy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.big .v u{font-size:calc(34 * var(--px));color:var(--mu);text-decoration:none;font-weight:400;margin-left:calc(4 * var(--px))}
+.big.g .v{color:var(--ok)}.big.o .v{color:var(--org)}
+.big .l{font-size:calc(24 * var(--px));color:var(--mu);margin-top:calc(8 * var(--px));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart{flex:1;display:flex;flex-direction:column;min-height:0}
+#cv{flex:1;width:100%;min-height:0;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:calc(14 * var(--px)) calc(34 * var(--px));justify-content:center;padding-top:calc(14 * var(--px));font-size:calc(22 * var(--px));color:var(--tx)}
+.legend span{display:inline-flex;align-items:center;gap:calc(10 * var(--px));white-space:nowrap}
+.legend i{width:calc(20 * var(--px));height:calc(20 * var(--px));border-radius:50%!important;flex:none}
+.legend b{color:var(--hi)}
+.ld{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:calc(28 * var(--px))}
+@media (max-width:900px){html,body{overflow:auto}.page{position:relative;min-height:calc(100vh - 52 * var(--px))}
+ .bar{grid-template-columns:1fr auto}.bar .c{display:none}
+ .hero{grid-template-columns:1fr 1fr 1fr}.big .v{font-size:calc(58 * var(--px))}.big .l{white-space:normal;font-size:calc(18 * var(--px))}
+ .chart{min-height:calc(420 * var(--px))}}
+</style>
+</head>
+<body>
+<div id="wp"></div>
+<div class="bar"><span class="l"><span class="a">◆</span> air quality</span><span class="c" id="clock"></span><span class="r" id="status">—</span></div>
+<div class="page">
+ <div class="hero">
+  <div class="panel big"><span class="t">Capacità in uso</span><div class="v" id="kCadr">–</div><div class="l">purificatori · m³/h aria pulita</div></div>
+  <div class="panel big g"><span class="t">PM2.5 interna</span><div class="v" id="kIn">–</div><div class="l">aria dentro casa · µg/m³</div></div>
+  <div class="panel big o"><span class="t">PM2.5 esterna</span><div class="v" id="kOut">–</div><div class="l">Dubai · µg/m³</div></div>
+ </div>
+ <div class="panel chart"><span class="t">Qualità aria vs Purificatori · ultime 24h</span>
+  <canvas id="cv"></canvas>
+  <div class="ld" id="ld">caricamento…</div>
+  <div class="legend">
+   <span><i style="background:var(--cy)"></i>Capacità in uso: <b id="lCadr">–</b></span>
+   <span><i style="background:var(--ok)"></i>PM2.5 interna: <b id="lIn">–</b></span>
+   <span><i style="background:var(--org)"></i>PM2.5 esterna: <b id="lOut">–</b></span>
+  </div>
+ </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const CSS=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim()||null;
+function col(v,f){const c=CSS(v);return c||f;}
+let DATA=null;
+
+function clock(){const d=new Date();$("#clock").textContent=d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});}
+setInterval(clock,1000);clock();
+
+function fmt(n,dec){if(n==null||isNaN(n))return "–";return Number(n).toLocaleString("it-IT",{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+
+async function load(){
+ try{
+  const r=await fetch("api/data",{cache:"no-store"});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  DATA=await r.json();
+  const c=DATA.current||{};
+  $("#kCadr").innerHTML=fmt(c.cadr,1)+'<u>m³/h</u>';
+  $("#kIn").innerHTML=fmt(c.indoor,0)+'<u>µg/m³</u>';
+  $("#kOut").innerHTML=fmt(c.outdoor,1)+'<u>µg/m³</u>';
+  $("#lCadr").textContent=fmt(c.cadr,1)+" m³/h";
+  $("#lIn").textContent=fmt(c.indoor,0)+" µg/m³";
+  $("#lOut").textContent=fmt(c.outdoor,1)+" µg/m³";
+  const d=new Date((DATA.at||Date.now()/1000)*1000);
+  const sb=$("#status");sb.classList.remove("err");
+  sb.textContent="aggiornato "+d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
+  $("#ld").style.display="none";
+  draw();
+ }catch(e){
+  const sb=$("#status");sb.classList.add("err");sb.textContent="offline · "+String(e.message||e).slice(0,40);
+  if(!DATA)$("#ld").textContent="dati non disponibili";
+ }
+}
+
+function niceMax(v,step){v=Math.max(v,step);return Math.ceil(v/step)*step;}
+
+function draw(){
+ if(!DATA)return;
+ const cv=$("#cv"),box=cv.getBoundingClientRect();
+ const dpr=window.devicePixelRatio||1,W=Math.max(box.width,10),H=Math.max(box.height,10);
+ cv.width=W*dpr;cv.height=H*dpr;
+ const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+ const S=DATA.series||{},cadr=S.cadr||[],ind=S.indoor||[],out=S.outdoor||[];
+ const all=[...cadr,...ind,...out];
+ if(!all.length){$("#ld").style.display="flex";$("#ld").textContent="nessun dato nelle ultime 24h";return;}
+ const t0=Math.min(...all.map(p=>p[0])),t1=Math.max(...all.map(p=>p[0]))||t0+1;
+ const pmMax=niceMax(Math.max(1,...ind.map(p=>p[1]),...out.map(p=>p[1])),14);
+ const cadrMax=niceMax((DATA.current&&DATA.current.cadr_max)||720,180);
+ const fs=parseFloat(getComputedStyle(cv).fontSize)||13,F=fs*0.62;
+ const padL=F*4.2,padR=F*4.2,padT=F*0.8,padB=F*2.4;
+ const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
+ const muted=col("--mu","#565f89"),txt=col("--tx","#a9b1d6");
+ const cCadr=col("--cy","#7aa2f7"),cIn=col("--ok","#9ece6a"),cOut=col("--org","#eb927b");
+ const X=t=>x0+(x1-x0)*((t-t0)/(t1-t0||1));
+ const YL=v=>y0-(y0-y1)*(v/cadrMax);
+ const YR=v=>y0-(y0-y1)*(v/pmMax);
+ g.font=F+"px "+getComputedStyle(cv).fontFamily;g.textBaseline="middle";
+ // grid + left axis (m3/h)
+ g.strokeStyle=col("--bd","#565f89");g.globalAlpha=.25;g.lineWidth=1;
+ const lt=4;
+ for(let i=0;i<=lt;i++){const v=cadrMax*i/lt,y=YL(v);g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();}
+ g.globalAlpha=1;g.fillStyle=muted;g.textAlign="right";
+ for(let i=0;i<=lt;i++){const v=cadrMax*i/lt;g.fillText(Math.round(v),x0-F*0.6,YL(v));}
+ // right axis (pm2.5)
+ g.textAlign="left";
+ for(let i=0;i<=lt;i++){const v=pmMax*i/lt;g.fillText(Math.round(v),x1+F*0.6,YR(v));}
+ // axis titles
+ g.save();g.translate(F*1.0,(y0+y1)/2);g.rotate(-Math.PI/2);g.textAlign="center";g.fillStyle=cCadr;g.fillText("m³/h aria pulita",0,0);g.restore();
+ g.save();g.translate(W-F*1.0,(y0+y1)/2);g.rotate(Math.PI/2);g.textAlign="center";g.fillStyle=cOut;g.fillText("PM2.5 µg/m³",0,0);g.restore();
+ // x labels (hours)
+ g.fillStyle=muted;g.textAlign="center";
+ const span=t1-t0,hStep=span>18*3.6e6?6:(span>8*3.6e6?3:2),hm=hStep*3.6e6;
+ let tk=Math.ceil(t0/hm)*hm;
+ for(;tk<=t1;tk+=hm){const d=new Date(tk);g.fillText(("0"+d.getHours()).slice(-2)+":00",X(tk),y0+F*1.3);}
+ // cadr stepped area + stroke
+ if(cadr.length){
+  g.beginPath();g.moveTo(X(cadr[0][0]),y0);
+  for(let i=0;i<cadr.length;i++){const x=X(cadr[i][0]),y=YL(cadr[i][1]);if(i)g.lineTo(x,YL(cadr[i-1][1]));g.lineTo(x,y);}
+  g.lineTo(X(cadr[cadr.length-1][0]),y0);g.closePath();
+  g.fillStyle=cCadr;g.globalAlpha=.30;g.fill();g.globalAlpha=1;
+  g.beginPath();
+  for(let i=0;i<cadr.length;i++){const x=X(cadr[i][0]),y=YL(cadr[i][1]);if(!i)g.moveTo(x,y);else{g.lineTo(x,YL(cadr[i-1][1]));g.lineTo(x,y);}}
+  g.strokeStyle=cCadr;g.lineWidth=2;g.lineJoin="round";g.stroke();
+ }
+ // pm lines
+ function line(pts,color){if(!pts.length)return;g.beginPath();for(let i=0;i<pts.length;i++){const x=X(pts[i][0]),y=YR(pts[i][1]);if(!i)g.moveTo(x,y);else g.lineTo(x,y);}g.strokeStyle=color;g.lineWidth=2.4;g.lineJoin="round";g.stroke();}
+ line(out,cOut);
+ line(ind,cIn);
+}
+
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
+// live Omarchy theme: reload the stylesheet + redraw when SuperOMI pushes a new theme
+try{const es=new EventSource("/theme/events");es.onmessage=()=>{const l=$("#omarchy-theme");l.href="/theme/omarchy.css?"+Date.now();setTimeout(draw,200);};}catch(e){}
+
+load();setInterval(load,60000);
+</script>
+</body>
+</html>

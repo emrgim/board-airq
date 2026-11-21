@@ -1,0 +1,9 @@
+{
+  "id": "airq",
+  "name": "Board-AirQ",
+  "icon": "🌬️",
+  "desc": "Qualità aria vs purificatori: capacità in uso e PM2.5 interna/esterna, live da Home Assistant.",
+  "root": "web",
+  "web": "index.html",
+  "tv": "tv.html"
+}

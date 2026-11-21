@@ -1,0 +1,15 @@
+[Unit]
+Description=Board-AirQ live data API (HA -> /airq/api/data for boards.mrg.im)
+After=network-online.target
+
+[Service]
+Type=simple
+Environment=HA_URL=http://127.0.0.1:8123
+Environment=HA_TOKEN=REPLACE_WITH_HA_TOKEN
+Environment=AIRQ_PORT=8142
+ExecStart=/usr/bin/python3 %h/boards/repos/airq/api/airq_api.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
