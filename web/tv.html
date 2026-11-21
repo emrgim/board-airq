@@ -111,7 +111,7 @@ function syncTabs(){var bs=document.querySelectorAll("#tabs b");for(var i=0;i<bs
 
 function winLabel(){
  var e=winEnd(),s=winStart();
- var o={day:"numeric",month:"short"};
+ var o=(LV[idx].k==="Year")?{day:"numeric",month:"short",year:"numeric"}:{day:"numeric",month:"short"};
  var sd=new Date(s),ed=new Date(e);
  var txt;
  if(LV[idx].k==="Day"){
