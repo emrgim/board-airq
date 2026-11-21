@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Board-AirQ · Qualità aria vs Purificatori</title>
+<title>Board-AirQ · Air quality vs Purifiers</title>
 <meta name="robots" content="noindex">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <script>/* mode + instant theme (last pushed Omarchy theme from cache, before first paint) */
 if(/tv\.html$/.test(location.pathname)||/[?&]tv(=1)?(&|$)/.test(location.search))document.documentElement.classList.add("tv");
-try{const t=JSON.parse(localStorage.getItem("airq.theme")||"null");if(t&&t.v){const r=document.documentElement.style;for(const k in t.v)if(t.v[k])r.setProperty(k,t.v[k]);r.colorScheme=t.cs||"dark";
+try{var t=JSON.parse(localStorage.getItem("airq.theme")||"null");if(t&&t.v){var r=document.documentElement.style;for(var k in t.v)if(t.v[k])r.setProperty(k,t.v[k]);r.colorScheme=t.cs||"dark";
  if(t.wp&&!/\.(mp4|webm|mkv|mov)(\?|$)/i.test(t.wp))r.setProperty("--omarchy-wallpaper",'url("'+t.wp+'")');}}catch(e){}
 </script>
 <link rel="stylesheet" id="omarchy-theme" href="/theme/omarchy.css" media="print" onload="this.media='all'">
@@ -45,16 +45,26 @@ b,strong,.v{font-weight:700}
 .big.g .v{color:var(--ok)}.big.o .v{color:var(--org)}
 .big .l{font-size:calc(24 * var(--px));color:var(--mu);margin-top:calc(8 * var(--px));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chart{flex:1;display:flex;flex-direction:column;min-height:0}
-#cv{flex:1;width:100%;min-height:0;display:block}
-.legend{display:flex;flex-wrap:wrap;gap:calc(14 * var(--px)) calc(34 * var(--px));justify-content:center;padding-top:calc(14 * var(--px));font-size:calc(22 * var(--px));color:var(--tx)}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:calc(16 * var(--px));margin-bottom:calc(6 * var(--px))}
+.winnav{display:flex;align-items:center;gap:calc(12 * var(--px));color:var(--mu);font-size:calc(22 * var(--px));white-space:nowrap}
+.winnav .nv{cursor:pointer;color:var(--cy);user-select:none;padding:0 calc(4 * var(--px))}
+.winnav .live{color:var(--ok);font-weight:700}
+.rtabs{display:flex;gap:calc(12 * var(--px))}
+.rtabs b{font-weight:400;color:var(--dt);font-size:calc(21 * var(--px));padding:calc(2 * var(--px)) calc(10 * var(--px));cursor:pointer;white-space:nowrap}
+.rtabs b.on{color:var(--ttl);font-weight:700;outline:calc(2 * var(--px)) solid var(--cy)}
+.cwrap{position:relative;flex:1;min-height:0}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ld{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:var(--mu);font-size:calc(28 * var(--px));text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:calc(12 * var(--px)) calc(34 * var(--px));justify-content:center;padding-top:calc(12 * var(--px));font-size:calc(22 * var(--px));color:var(--tx)}
 .legend span{display:inline-flex;align-items:center;gap:calc(10 * var(--px));white-space:nowrap}
 .legend i{width:calc(20 * var(--px));height:calc(20 * var(--px));border-radius:50%!important;flex:none}
 .legend b{color:var(--hi)}
-.ld{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:calc(28 * var(--px))}
+.hint{text-align:center;color:var(--mu);font-size:calc(19 * var(--px));padding-top:calc(6 * var(--px))}
+.hint kbd{color:var(--cy);font-family:inherit}
 @media (max-width:900px){html,body{overflow:auto}.page{position:relative;min-height:calc(100vh - 52 * var(--px))}
  .bar{grid-template-columns:1fr auto}.bar .c{display:none}
  .hero{grid-template-columns:1fr 1fr 1fr}.big .v{font-size:calc(58 * var(--px))}.big .l{white-space:normal;font-size:calc(18 * var(--px))}
- .chart{min-height:calc(420 * var(--px))}}
+ .cwrap{min-height:calc(360 * var(--px))}.chead{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -62,115 +72,175 @@ b,strong,.v{font-weight:700}
 <div class="bar"><span class="l"><span class="a">◆</span> air quality</span><span class="c" id="clock"></span><span class="r" id="status">—</span></div>
 <div class="page">
  <div class="hero">
-  <div class="panel big"><span class="t">Capacità in uso</span><div class="v" id="kCadr">–</div><div class="l">purificatori · m³/h aria pulita</div></div>
-  <div class="panel big g"><span class="t">PM2.5 interna</span><div class="v" id="kIn">–</div><div class="l">aria dentro casa · µg/m³</div></div>
-  <div class="panel big o"><span class="t">PM2.5 esterna</span><div class="v" id="kOut">–</div><div class="l">Dubai · µg/m³</div></div>
+  <div class="panel big"><span class="t">Capacity in use</span><div class="v" id="kCadr">–</div><div class="l">purifiers · m³/h clean air</div></div>
+  <div class="panel big g"><span class="t">Indoor PM2.5</span><div class="v" id="kIn">–</div><div class="l">air inside the home · µg/m³</div></div>
+  <div class="panel big o"><span class="t">Outdoor PM2.5</span><div class="v" id="kOut">–</div><div class="l">Dubai · µg/m³</div></div>
  </div>
- <div class="panel chart"><span class="t">Qualità aria vs Purificatori · ultime 24h</span>
-  <canvas id="cv"></canvas>
-  <div class="ld" id="ld">caricamento…</div>
-  <div class="legend">
-   <span><i style="background:var(--cy)"></i>Capacità in uso: <b id="lCadr">–</b></span>
-   <span><i style="background:var(--ok)"></i>PM2.5 interna: <b id="lIn">–</b></span>
-   <span><i style="background:var(--org)"></i>PM2.5 esterna: <b id="lOut">–</b></span>
+ <div class="panel chart"><span class="t">Air quality vs Purifiers</span>
+  <div class="chead">
+   <div class="winnav"><span class="nv" id="back">◀</span><span id="win">LIVE</span><span class="nv" id="fwd">▶</span></div>
+   <div class="rtabs" id="tabs"><b data-i="0">Year</b><b data-i="1">Month</b><b data-i="2">Week</b><b data-i="3">Day</b></div>
   </div>
+  <div class="cwrap"><canvas id="cv"></canvas><div class="ld" id="ld">loading…</div></div>
+  <div class="legend">
+   <span><i style="background:var(--cy)"></i>Capacity in use: <b id="lCadr">–</b></span>
+   <span><i style="background:var(--ok)"></i>Indoor PM2.5: <b id="lIn">–</b></span>
+   <span><i style="background:var(--org)"></i>Outdoor PM2.5: <b id="lOut">–</b></span>
+  </div>
+  <div class="hint"><kbd>▲▼</kbd> zoom (year · month · week · day) &nbsp;·&nbsp; <kbd>◀▶</kbd> move through time</div>
  </div>
 </div>
 <script>
-const $=s=>document.querySelector(s);
-const CSS=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim()||null;
-function col(v,f){const c=CSS(v);return c||f;}
-let DATA=null;
+var $=function(s){return document.querySelector(s);};
+function CSS(k){var c=getComputedStyle(document.documentElement).getPropertyValue(k).trim();return c||null;}
+function col(v,f){return CSS(v)||f;}
+var DATA=null;
+var DAY=864e5;
+var LV=[{k:"Year",dur:365*DAY},{k:"Month",dur:30*DAY},{k:"Week",dur:7*DAY},{k:"Day",dur:DAY}];
+var idx=3, live=true, endMs=Date.now();
 
-function clock(){const d=new Date();$("#clock").textContent=d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});}
+function clock(){var d=new Date();$("#clock").textContent=d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});}
 setInterval(clock,1000);clock();
 
-function fmt(n,dec){if(n==null||isNaN(n))return "–";return Number(n).toLocaleString("it-IT",{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function fmt(n,dec){if(n==null||isNaN(n))return "–";return Number(n).toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function dur(){return LV[idx].dur;}
+function winEnd(){return live?Date.now():endMs;}
+function winStart(){return winEnd()-dur();}
+
+function syncTabs(){var bs=document.querySelectorAll("#tabs b");for(var i=0;i<bs.length;i++)bs[i].className=(+bs[i].dataset.i===idx)?"on":"";}
+
+function winLabel(){
+ var e=winEnd(),s=winStart();
+ var o={day:"numeric",month:"short"};
+ var sd=new Date(s),ed=new Date(e);
+ var txt;
+ if(LV[idx].k==="Day"){
+  txt=sd.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+ }else{
+  txt=sd.toLocaleDateString("en-GB",o)+" – "+ed.toLocaleDateString("en-GB",o);
+ }
+ $("#win").innerHTML=(live?'<span class="live">LIVE</span> · ':"")+LV[idx].k+" · "+txt;
+}
+
+function niceMax(v,step){v=Math.max(v,step);return Math.ceil(v/step)*step;}
+function startOfDay(ms){var d=new Date(ms);d.setHours(0,0,0,0);return d.getTime();}
+
+function ticks(s,e){
+ var out=[],t,d;
+ var level=LV[idx].k;
+ if(level==="Day"){
+  var stp=(e-s)>16*36e5?3*36e5:2*36e5;
+  for(t=Math.ceil(s/stp)*stp;t<=e;t+=stp)out.push([t,new Date(t).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})]);
+ }else if(level==="Week"){
+  for(t=startOfDay(s);t<=e;t+=DAY)if(t>=s)out.push([t,new Date(t).toLocaleDateString("en-GB",{weekday:"short"})]);
+ }else if(level==="Month"){
+  for(t=startOfDay(s);t<=e;t+=5*DAY)if(t>=s)out.push([t,new Date(t).toLocaleDateString("en-GB",{day:"numeric",month:"short"})]);
+ }else{
+  d=new Date(s);d.setDate(1);d.setHours(0,0,0,0);
+  for(;d.getTime()<=e;d.setMonth(d.getMonth()+1))if(d.getTime()>=s)out.push([d.getTime(),d.toLocaleDateString("en-GB",{month:"short"})]);
+ }
+ return out;
+}
+
+function draw(){
+ if(!DATA)return;
+ var cv=$("#cv"),box=cv.getBoundingClientRect();
+ var dpr=window.devicePixelRatio||1,W=Math.max(box.width,10),H=Math.max(box.height,10);
+ cv.width=W*dpr;cv.height=H*dpr;
+ var g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+ var S=DATA.series||{},cadr=S.cadr||[],ind=S.indoor||[],out=S.outdoor||[];
+ var win=DATA.window||{from:winStart(),to:winEnd()};
+ var t0=win.from,t1=win.to||t0+1;
+ var total=cadr.length+ind.length+out.length;
+ $("#ld").style.display=total?"none":"flex";
+ if(!total)$("#ld").textContent="no recorded data in this range";
+ var pmMax=niceMax(Math.max(1,Math.max.apply(null,[0].concat(ind.map(function(p){return p[1];}),out.map(function(p){return p[1];})))),14);
+ var cadrMax=niceMax((DATA.current&&DATA.current.cadr_max)||720,180);
+ var fs=parseFloat(getComputedStyle(cv).fontSize)||13,F=fs*0.62;
+ var padL=F*4.2,padR=F*4.2,padT=F*0.8,padB=F*2.4;
+ var x0=padL,x1=W-padR,y0=H-padB,y1=padT;
+ var muted=col("--mu","#565f89");
+ var cCadr=col("--cy","#7aa2f7"),cIn=col("--ok","#9ece6a"),cOut=col("--org","#eb927b");
+ var X=function(t){return x0+(x1-x0)*((t-t0)/((t1-t0)||1));};
+ var YL=function(v){return y0-(y0-y1)*(v/cadrMax);};
+ var YR=function(v){return y0-(y0-y1)*(v/pmMax);};
+ g.font=F+"px "+getComputedStyle(cv).fontFamily;g.textBaseline="middle";
+ var lt=4,i,v,y;
+ g.strokeStyle=col("--bd","#565f89");g.globalAlpha=.25;g.lineWidth=1;
+ for(i=0;i<=lt;i++){y=YL(cadrMax*i/lt);g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();}
+ g.globalAlpha=1;g.fillStyle=muted;g.textAlign="right";
+ for(i=0;i<=lt;i++){v=cadrMax*i/lt;g.fillText(Math.round(v),x0-F*0.6,YL(v));}
+ g.textAlign="left";
+ for(i=0;i<=lt;i++){v=pmMax*i/lt;g.fillText(Math.round(v),x1+F*0.6,YR(v));}
+ g.save();g.translate(F*1.0,(y0+y1)/2);g.rotate(-Math.PI/2);g.textAlign="center";g.fillStyle=cCadr;g.fillText("m³/h clean air",0,0);g.restore();
+ g.save();g.translate(W-F*1.0,(y0+y1)/2);g.rotate(Math.PI/2);g.textAlign="center";g.fillStyle=cOut;g.fillText("PM2.5 µg/m³",0,0);g.restore();
+ g.fillStyle=muted;g.textAlign="center";
+ var tk=ticks(t0,t1);
+ for(i=0;i<tk.length;i++)g.fillText(tk[i][1],X(tk[i][0]),y0+F*1.3);
+ // cadr stepped area + stroke (real points only; no padding where data is absent)
+ if(cadr.length){
+  g.beginPath();g.moveTo(X(cadr[0][0]),y0);
+  for(i=0;i<cadr.length;i++){y=YL(cadr[i][1]);if(i)g.lineTo(X(cadr[i][0]),YL(cadr[i-1][1]));g.lineTo(X(cadr[i][0]),y);}
+  g.lineTo(X(cadr[cadr.length-1][0]),y0);g.closePath();
+  g.fillStyle=cCadr;g.globalAlpha=.30;g.fill();g.globalAlpha=1;
+  g.beginPath();
+  for(i=0;i<cadr.length;i++){y=YL(cadr[i][1]);if(!i)g.moveTo(X(cadr[i][0]),y);else{g.lineTo(X(cadr[i][0]),YL(cadr[i-1][1]));g.lineTo(X(cadr[i][0]),y);}}
+  g.strokeStyle=cCadr;g.lineWidth=2;g.lineJoin="round";g.stroke();
+ }
+ function line(pts,color){if(!pts.length)return;g.beginPath();for(var j=0;j<pts.length;j++){if(!j)g.moveTo(X(pts[j][0]),YR(pts[j][1]));else g.lineTo(X(pts[j][0]),YR(pts[j][1]));}g.strokeStyle=color;g.lineWidth=2.4;g.lineJoin="round";g.stroke();}
+ line(out,cOut);
+ line(ind,cIn);
+}
 
 async function load(){
+ syncTabs();winLabel();
+ var url="api/data?from="+Math.round(winStart())+"&to="+Math.round(winEnd());
  try{
-  const r=await fetch("api/data",{cache:"no-store"});
+  var r=await fetch(url,{cache:"no-store"});
   if(!r.ok)throw new Error("HTTP "+r.status);
   DATA=await r.json();
-  const c=DATA.current||{};
+  var c=DATA.current||{};
   $("#kCadr").innerHTML=fmt(c.cadr,1)+'<u>m³/h</u>';
   $("#kIn").innerHTML=fmt(c.indoor,0)+'<u>µg/m³</u>';
   $("#kOut").innerHTML=fmt(c.outdoor,1)+'<u>µg/m³</u>';
   $("#lCadr").textContent=fmt(c.cadr,1)+" m³/h";
   $("#lIn").textContent=fmt(c.indoor,0)+" µg/m³";
   $("#lOut").textContent=fmt(c.outdoor,1)+" µg/m³";
-  const d=new Date((DATA.at||Date.now()/1000)*1000);
-  const sb=$("#status");sb.classList.remove("err");
-  sb.textContent="aggiornato "+d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
-  $("#ld").style.display="none";
+  var d=new Date((DATA.at||Date.now()/1000)*1000);
+  var sb=$("#status");sb.classList.remove("err");
+  sb.textContent="updated "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
   draw();
  }catch(e){
-  const sb=$("#status");sb.classList.add("err");sb.textContent="offline · "+String(e.message||e).slice(0,40);
-  if(!DATA)$("#ld").textContent="dati non disponibili";
+  var s2=$("#status");s2.classList.add("err");s2.textContent="offline · "+String(e.message||e).slice(0,40);
+  if(!DATA){$("#ld").style.display="flex";$("#ld").textContent="data unavailable";}
  }
 }
 
-function niceMax(v,step){v=Math.max(v,step);return Math.ceil(v/step)*step;}
+var pend;
+function refresh(){clearTimeout(pend);pend=setTimeout(load,90);}
+function zoomIn(){if(idx<LV.length-1){idx++;refresh();}}
+function zoomOut(){if(idx>0){idx--;refresh();}}
+function panBack(){live=false;endMs=winEnd()-dur();refresh();}
+function panFwd(){var e=winEnd()+dur();if(e>=Date.now()){live=true;}else{live=false;endMs=e;}refresh();}
 
-function draw(){
- if(!DATA)return;
- const cv=$("#cv"),box=cv.getBoundingClientRect();
- const dpr=window.devicePixelRatio||1,W=Math.max(box.width,10),H=Math.max(box.height,10);
- cv.width=W*dpr;cv.height=H*dpr;
- const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
- const S=DATA.series||{},cadr=S.cadr||[],ind=S.indoor||[],out=S.outdoor||[];
- const all=[...cadr,...ind,...out];
- if(!all.length){$("#ld").style.display="flex";$("#ld").textContent="nessun dato nelle ultime 24h";return;}
- const t0=Math.min(...all.map(p=>p[0])),t1=Math.max(...all.map(p=>p[0]))||t0+1;
- const pmMax=niceMax(Math.max(1,...ind.map(p=>p[1]),...out.map(p=>p[1])),14);
- const cadrMax=niceMax((DATA.current&&DATA.current.cadr_max)||720,180);
- const fs=parseFloat(getComputedStyle(cv).fontSize)||13,F=fs*0.62;
- const padL=F*4.2,padR=F*4.2,padT=F*0.8,padB=F*2.4;
- const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
- const muted=col("--mu","#565f89"),txt=col("--tx","#a9b1d6");
- const cCadr=col("--cy","#7aa2f7"),cIn=col("--ok","#9ece6a"),cOut=col("--org","#eb927b");
- const X=t=>x0+(x1-x0)*((t-t0)/(t1-t0||1));
- const YL=v=>y0-(y0-y1)*(v/cadrMax);
- const YR=v=>y0-(y0-y1)*(v/pmMax);
- g.font=F+"px "+getComputedStyle(cv).fontFamily;g.textBaseline="middle";
- // grid + left axis (m3/h)
- g.strokeStyle=col("--bd","#565f89");g.globalAlpha=.25;g.lineWidth=1;
- const lt=4;
- for(let i=0;i<=lt;i++){const v=cadrMax*i/lt,y=YL(v);g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();}
- g.globalAlpha=1;g.fillStyle=muted;g.textAlign="right";
- for(let i=0;i<=lt;i++){const v=cadrMax*i/lt;g.fillText(Math.round(v),x0-F*0.6,YL(v));}
- // right axis (pm2.5)
- g.textAlign="left";
- for(let i=0;i<=lt;i++){const v=pmMax*i/lt;g.fillText(Math.round(v),x1+F*0.6,YR(v));}
- // axis titles
- g.save();g.translate(F*1.0,(y0+y1)/2);g.rotate(-Math.PI/2);g.textAlign="center";g.fillStyle=cCadr;g.fillText("m³/h aria pulita",0,0);g.restore();
- g.save();g.translate(W-F*1.0,(y0+y1)/2);g.rotate(Math.PI/2);g.textAlign="center";g.fillStyle=cOut;g.fillText("PM2.5 µg/m³",0,0);g.restore();
- // x labels (hours)
- g.fillStyle=muted;g.textAlign="center";
- const span=t1-t0,hStep=span>18*3.6e6?6:(span>8*3.6e6?3:2),hm=hStep*3.6e6;
- let tk=Math.ceil(t0/hm)*hm;
- for(;tk<=t1;tk+=hm){const d=new Date(tk);g.fillText(("0"+d.getHours()).slice(-2)+":00",X(tk),y0+F*1.3);}
- // cadr stepped area + stroke
- if(cadr.length){
-  g.beginPath();g.moveTo(X(cadr[0][0]),y0);
-  for(let i=0;i<cadr.length;i++){const x=X(cadr[i][0]),y=YL(cadr[i][1]);if(i)g.lineTo(x,YL(cadr[i-1][1]));g.lineTo(x,y);}
-  g.lineTo(X(cadr[cadr.length-1][0]),y0);g.closePath();
-  g.fillStyle=cCadr;g.globalAlpha=.30;g.fill();g.globalAlpha=1;
-  g.beginPath();
-  for(let i=0;i<cadr.length;i++){const x=X(cadr[i][0]),y=YL(cadr[i][1]);if(!i)g.moveTo(x,y);else{g.lineTo(x,YL(cadr[i-1][1]));g.lineTo(x,y);}}
-  g.strokeStyle=cCadr;g.lineWidth=2;g.lineJoin="round";g.stroke();
- }
- // pm lines
- function line(pts,color){if(!pts.length)return;g.beginPath();for(let i=0;i<pts.length;i++){const x=X(pts[i][0]),y=YR(pts[i][1]);if(!i)g.moveTo(x,y);else g.lineTo(x,y);}g.strokeStyle=color;g.lineWidth=2.4;g.lineJoin="round";g.stroke();}
- line(out,cOut);
- line(ind,cIn);
-}
+window.addEventListener("keydown",function(ev){
+ var handled=true;
+ if(ev.key==="ArrowUp")zoomIn();
+ else if(ev.key==="ArrowDown")zoomOut();
+ else if(ev.key==="ArrowLeft")panBack();
+ else if(ev.key==="ArrowRight")panFwd();
+ else handled=false;
+ if(handled)ev.preventDefault();
+});
+$("#back").addEventListener("click",panBack);
+$("#fwd").addEventListener("click",panFwd);
+document.querySelectorAll("#tabs b").forEach(function(b){b.addEventListener("click",function(){idx=+b.dataset.i;refresh();});});
 
-let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
-// live Omarchy theme: reload the stylesheet + redraw when SuperOMI pushes a new theme
-try{const es=new EventSource("/theme/events");es.onmessage=()=>{const l=$("#omarchy-theme");l.href="/theme/omarchy.css?"+Date.now();setTimeout(draw,200);};}catch(e){}
+var rt;window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(draw,120);});
+try{var es=new EventSource("/theme/events");es.onmessage=function(){var l=$("#omarchy-theme");l.href="/theme/omarchy.css?"+Date.now();setTimeout(draw,200);};}catch(e){}
 
-load();setInterval(load,60000);
+load();
+setInterval(function(){load();},60000);
 </script>
 </body>
 </html>
