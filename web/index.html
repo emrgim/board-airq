@@ -66,6 +66,24 @@ b,strong,.v{font-weight:700}
 @keyframes scanC{0%,100%{outline-color:transparent}50%{outline-color:var(--cy)}}
 .big.g.scan{animation-name:scanG}@keyframes scanG{0%,100%{outline-color:transparent}50%{outline-color:var(--ok)}}
 .big.o.scan{animation-name:scanO}@keyframes scanO{0%,100%{outline-color:transparent}50%{outline-color:var(--org)}}
+/* purifier fan-power control (4 states, segmented — no dropdown) */
+.ctl{flex:none}
+.fanbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:calc(10 * var(--px));margin-top:calc(6 * var(--px))}
+.fb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(3 * var(--px));background:color-mix(in srgb,var(--cy) 10%,transparent);border:calc(2 * var(--px)) solid var(--bd);color:var(--tx);font:inherit;padding:calc(10 * var(--px)) calc(6 * var(--px));cursor:pointer}
+.fb .fan{width:calc(34 * var(--px));height:calc(34 * var(--px));fill:var(--cy)}
+.fb b{font-size:calc(22 * var(--px));color:var(--hi);font-weight:700}
+.fb u{font-size:calc(20 * var(--px));color:var(--mu);text-decoration:none;font-variant-numeric:tabular-nums}
+.fb.off .fan{fill:var(--mu)}
+.fb.on{background:var(--cy);border-color:var(--cy)}
+.fb.on .fan{fill:var(--bg)}.fb.on b,.fb.on u{color:var(--bg)}
+.fb.off.on{background:var(--mu);border-color:var(--mu)}
+html:not(.tv) .fb:hover{border-color:var(--cy)}
+.fb:disabled{opacity:.45;cursor:not-allowed}
+.pinrow{display:flex;align-items:center;gap:calc(10 * var(--px));margin-top:calc(10 * var(--px));font-size:calc(20 * var(--px))}
+.pinrow input{background:var(--bg);color:var(--tx);border:calc(2 * var(--px)) solid var(--bd);font:inherit;padding:calc(6 * var(--px)) calc(10 * var(--px));width:calc(120 * var(--px));letter-spacing:.3em}
+.pinrow input:focus{outline:none;border-color:var(--cy)}
+.pinrow button{background:var(--cy);color:var(--bg);border:0;font:inherit;font-weight:700;padding:calc(6 * var(--px)) calc(14 * var(--px));cursor:pointer}
+.pinrow #pinmsg{color:var(--warn)}
 @media (max-width:900px){html,body{overflow:auto}.page{position:relative;min-height:calc(100vh - 52 * var(--px))}
  .bar{grid-template-columns:1fr auto}.bar .c{display:none}
  .hero{grid-template-columns:1fr 1fr 1fr}.big .v{font-size:calc(58 * var(--px))}.big .l{white-space:normal;font-size:calc(18 * var(--px))}
@@ -74,12 +92,22 @@ b,strong,.v{font-weight:700}
 </head>
 <body>
 <div id="wp"></div>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute"><symbol id="fan" viewBox="0 0 24 24"><path d="M12,11A1,1 0 0,0 11,12A1,1 0 0,0 12,13A1,1 0 0,0 13,12A1,1 0 0,0 12,11M12.5,2C17,2 17.11,5.57 14.75,6.75C13.76,7.24 13.32,8.29 13.13,9.22C13.61,9.42 14.03,9.73 14.35,10.13C18.05,8.13 22.03,8.92 22.03,12.5C22.03,17 18.46,17.1 17.28,14.73C16.78,13.74 15.72,13.3 14.79,13.11C14.59,13.59 14.28,14 13.88,14.34C15.87,18.03 15.08,22 11.5,22C7,22 6.91,18.42 9.27,17.24C10.25,16.75 10.69,15.71 10.89,14.79C10.4,14.59 9.97,14.27 9.65,13.87C5.96,15.85 2,15.07 2,11.5C2,7 5.56,6.89 6.74,9.26C7.24,10.25 8.29,10.69 9.22,10.88C9.41,10.4 9.73,9.97 10.14,9.65C8.15,5.96 8.94,2 12.5,2Z"/></symbol><symbol id="fanoff" viewBox="0 0 24 24"><path d="M22.03,12.5C22.03,8.92 18.05,8.13 14.35,10.13C14.03,9.73 13.61,9.42 13.13,9.22C13.32,8.29 13.76,7.24 14.75,6.75C17.11,5.57 17,2 12.5,2C8.94,2 8.15,5.96 10.14,9.65L12.03,11.54C12.19,11.5 12.36,11.5 12.53,11.5A1,1 0 0,1 13.5,12.47L15.19,14.16C15.42,13.76 15.76,13.43 16.17,13.22M1.11,3.39L4.11,6.39C2.5,6.72 2,8 2,11.5C2,15.07 5.96,15.85 9.65,13.87C9.97,14.27 10.4,14.59 10.89,14.79C10.69,15.71 10.25,16.75 9.27,17.24C6.91,18.42 7,22 11.5,22C14.83,22 15.82,18.56 14.4,14.89L20.84,21.33L22.11,20.06L2.39,2.11L1.11,3.39Z"/></symbol></svg>
 <div class="bar"><span class="l"><span class="a">◆</span> air quality</span><span class="c" id="clock"></span><span class="r" id="status">—</span></div>
 <div class="page">
  <div class="hero">
   <div class="panel big"><span class="t">Capacity in use</span><div class="v" id="kCadr">–</div><div class="l">purifiers · m³/h clean air</div></div>
   <div class="panel big g"><span class="t">Indoor PM2.5</span><div class="v" id="kIn">–</div><div class="l">air inside the home · µg/m³</div></div>
   <div class="panel big o"><span class="t">Outdoor PM2.5</span><div class="v" id="kOut">–</div><div class="l">Dubai · µg/m³</div></div>
+ </div>
+ <div class="panel ctl"><span class="t">Purifiers · suction power</span>
+  <div class="fanbtns" id="fanbtns">
+   <button type="button" class="fb off" data-s="off"><svg class="fan"><use href="#fanoff"></use></svg><b>Off</b><u>0 m³/h</u></button>
+   <button type="button" class="fb" data-s="low"><svg class="fan"><use href="#fan"></use></svg><b>Min</b><u>180 m³/h</u></button>
+   <button type="button" class="fb" data-s="med"><svg class="fan"><use href="#fan"></use></svg><b>Med</b><u>411 m³/h</u></button>
+   <button type="button" class="fb" data-s="ultra"><svg class="fan"><use href="#fan"></use></svg><b>Ultra</b><u>720 m³/h</u></button>
+  </div>
+  <div class="pinrow" id="pinrow" style="display:none"><input id="pin" inputmode="numeric" maxlength="8" placeholder="PIN" autocomplete="off"><button type="button" id="pinok">Unlock</button><span id="pinmsg"></span></div>
  </div>
  <div class="panel chart"><span class="t">Air quality vs Purifiers</span>
   <div class="chead">
@@ -251,7 +279,7 @@ async function load(){
   var d=new Date((DATA.at||Date.now()/1000)*1000);
   var sb=$("#status");sb.classList.remove("err");
   sb.textContent="updated "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
-  draw();
+  renderControl();draw();
  }catch(e){
   var s2=$("#status");s2.classList.add("err");s2.textContent="offline · "+String(e.message||e).slice(0,40);
   if(!DATA){$("#ld").style.display="flex";$("#ld").textContent="data unavailable";}
@@ -266,6 +294,7 @@ function panBack(){live=false;endMs=winEnd()-dur();refresh();}
 function panFwd(){var e=winEnd()+dur();if(e>=Date.now()){live=true;}else{live=false;endMs=e;}refresh();}
 
 window.addEventListener("keydown",function(ev){
+ if(ev.target&&(ev.target.tagName==="INPUT"||ev.target.tagName==="BUTTON"))return;
  var handled=true;
  if(ev.key==="Enter"||ev.key===" ")toggleInspect();
  else if(ev.key==="Escape"||ev.key==="Backspace"||ev.key==="GoBack"){if(inspect)exitInspect();else handled=false;}
@@ -287,6 +316,39 @@ $("#cv").addEventListener("mousemove",function(ev){if(!inspect)return;var T=ptrT
 
 var rt;window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(draw,120);});
 try{var es=new EventSource("/theme/events");es.onmessage=function(){var l=$("#omarchy-theme");l.href="/theme/omarchy.css?"+Date.now();setTimeout(draw,200);};}catch(e){}
+
+
+// --- purifier control (PIN-gated writes; reads stay public) ---
+var CYMAP={Off:"off",Min:"low",Med:"med",Ultra:"ultra"};
+var pendingState=null;
+function renderControl(){
+ var c=(DATA&&DATA.current)||{};var dis=!c.control;var active=CYMAP[c.cycle]||null;
+ document.querySelectorAll(".fb").forEach(function(b){b.disabled=dis;b.classList.toggle("on",b.dataset.s===active);});
+}
+function flash(msg){var m=$("#pinmsg");if(m){m.textContent=msg;setTimeout(function(){if(m.textContent===msg)m.textContent="";},2600);}}
+function showPin(msg){$("#pinrow").style.display="flex";$("#pinmsg").textContent=msg||"";$("#pin").focus();}
+function hidePin(){$("#pinrow").style.display="none";$("#pin").value="";}
+async function sendSet(state,pin){
+ try{
+  var r=await fetch("api/set",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:pin,state:state})});
+  var j={};try{j=await r.json();}catch(e){}
+  if(r.ok){sessionStorage.setItem("airq.pin",pin);hidePin();var a=CYMAP[j.cycle];document.querySelectorAll(".fb").forEach(function(b){b.classList.toggle("on",b.dataset.s===a);});setTimeout(load,400);}
+  else if(r.status===403){sessionStorage.removeItem("airq.pin");showPin("wrong PIN");}
+  else if(r.status===429){showPin("locked — wait a few minutes");}
+  else if(r.status===503){flash("control disabled");}
+  else{flash((j&&j.error)||"error");}
+ }catch(e){flash("offline");}
+}
+function setFan(state){
+ var c=(DATA&&DATA.current)||{};
+ if(!c.control){flash("control disabled");return;}
+ var pin=sessionStorage.getItem("airq.pin");
+ if(!pin){pendingState=state;showPin("enter PIN to control");return;}
+ sendSet(state,pin);
+}
+document.querySelectorAll(".fb").forEach(function(b){b.addEventListener("click",function(){setFan(b.dataset.s);});});
+$("#pinok").addEventListener("click",function(){var v=$("#pin").value.trim();if(v)sendSet(pendingState||"off",v);});
+$("#pin").addEventListener("keydown",function(ev){if(ev.key==="Enter"){ev.stopPropagation();var v=$("#pin").value.trim();if(v)sendSet(pendingState||"off",v);}});
 
 load();
 setInterval(function(){load();},60000);
