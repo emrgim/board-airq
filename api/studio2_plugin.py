@@ -8,8 +8,10 @@ UPSTREAM = "http://127.0.0.1:8142"
 
 def setup(root):
     def fwd(h):
+        # board mounts at /airq/; the API service exposes /api/*  -> strip the mount prefix
+        up = UPSTREAM + (h.path[len("/airq"):] if h.path.startswith("/airq/") else h.path)
         try:
-            r = urllib.request.urlopen(UPSTREAM + h.path, timeout=20)
+            r = urllib.request.urlopen(up, timeout=20)
             code, body = r.status, r.read()
         except urllib.error.HTTPError as e:
             code, body = e.code, e.read()
