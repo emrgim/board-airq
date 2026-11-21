@@ -148,7 +148,6 @@ function draw(){
  var dpr=window.devicePixelRatio||1,W=Math.max(box.width,10),H=Math.max(box.height,10);
  cv.width=W*dpr;cv.height=H*dpr;
  var g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
- g.fillStyle=col("--bg","#1a1b26");g.globalAlpha=.88;g.fillRect(0,0,W,H);g.globalAlpha=1;
  var S=DATA.series||{},cadr=S.cadr||[],ind=S.indoor||[],out=S.outdoor||[];
  var win=DATA.window||{from:winStart(),to:winEnd()};
  var t0=win.from,t1=win.to||t0+1;
@@ -166,18 +165,19 @@ function draw(){
  var YL=function(v){return y0-(y0-y1)*(v/cadrMax);};
  var YR=function(v){return y0-(y0-y1)*(v/pmMax);};
  g.font=F+"px "+getComputedStyle(cv).fontFamily;g.textBaseline="middle";
+ var lab=function(txt,x,y){g.save();g.lineJoin="round";g.lineWidth=F*0.34;g.strokeStyle=col("--bg","#1a1b26");g.strokeText(txt,x,y);g.restore();g.fillText(txt,x,y);};
  var lt=4,i,v,y;
  g.strokeStyle=col("--bd","#565f89");g.globalAlpha=.25;g.lineWidth=1;
  for(i=0;i<=lt;i++){y=YL(cadrMax*i/lt);g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();}
  g.globalAlpha=1;g.fillStyle=muted;g.textAlign="right";
- for(i=0;i<=lt;i++){v=cadrMax*i/lt;g.fillText(Math.round(v),x0-F*0.6,YL(v));}
+ for(i=0;i<=lt;i++){v=cadrMax*i/lt;lab(Math.round(v),x0-F*0.6,YL(v));}
  g.textAlign="left";
- for(i=0;i<=lt;i++){v=pmMax*i/lt;g.fillText(Math.round(v),x1+F*0.6,YR(v));}
- g.save();g.translate(F*1.0,(y0+y1)/2);g.rotate(-Math.PI/2);g.textAlign="center";g.fillStyle=cCadr;g.fillText("m³/h clean air",0,0);g.restore();
- g.save();g.translate(W-F*1.0,(y0+y1)/2);g.rotate(Math.PI/2);g.textAlign="center";g.fillStyle=cOut;g.fillText("PM2.5 µg/m³",0,0);g.restore();
+ for(i=0;i<=lt;i++){v=pmMax*i/lt;lab(Math.round(v),x1+F*0.6,YR(v));}
+ g.save();g.translate(F*1.0,(y0+y1)/2);g.rotate(-Math.PI/2);g.textAlign="center";g.fillStyle=cCadr;lab("m³/h clean air",0,0);g.restore();
+ g.save();g.translate(W-F*1.0,(y0+y1)/2);g.rotate(Math.PI/2);g.textAlign="center";g.fillStyle=cOut;lab("PM2.5 µg/m³",0,0);g.restore();
  g.fillStyle=muted;g.textAlign="center";
  var tk=ticks(t0,t1);
- for(i=0;i<tk.length;i++)g.fillText(tk[i][1],X(tk[i][0]),y0+F*1.3);
+ for(i=0;i<tk.length;i++)lab(tk[i][1],X(tk[i][0]),y0+F*1.3);
  // cadr stepped area + stroke (real points only; no padding where data is absent)
  if(cadr.length){
   g.beginPath();g.moveTo(X(cadr[0][0]),y0);
