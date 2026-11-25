@@ -8,10 +8,9 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <script>/* mode + instant theme (last pushed Omarchy theme from cache, before first paint) */
 if(/tv\.html$/.test(location.pathname)||/[?&]tv(=1)?(&|$)/.test(location.search))document.documentElement.classList.add("tv");
-try{var t=JSON.parse(localStorage.getItem("airq.theme")||"null");if(t&&t.v){var r=document.documentElement.style;for(var k in t.v)if(t.v[k])r.setProperty(k,t.v[k]);r.colorScheme=t.cs||"dark";
- if(t.wp&&!/\.(mp4|webm|mkv|mov)(\?|$)/i.test(t.wp))r.setProperty("--omarchy-wallpaper",'url("'+t.wp+'")');}}catch(e){}
+try{var t=JSON.parse(localStorage.getItem("airq.theme")||"null");if(t&&t.v){var c=":root{";for(var k in t.v)if(t.v[k]&&k.indexOf("--omarchy-")===0)c+=k+":"+t.v[k]+";";c+="color-scheme:"+(t.cs||"dark")+"}";var e=document.createElement("style");e.id="theme-cache";e.textContent=c;document.head.appendChild(e);}}catch(e){}
 </script>
-<link rel="stylesheet" id="omarchy-theme" href="/theme/omarchy.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" id="omarchy-theme" href="/theme/omarchy.css" media="print" onload="this.media='all';var c=document.getElementById('theme-cache');if(c)c.remove();if(window.saveTheme)saveTheme()">
 <style>
 /* Omarchy board style, same token system as Studio Dubai / Van Hunter. Every colour comes from the
    live Omarchy theme (/theme: omarchy.css vars + /theme/events push); literals below are fallbacks only. */
@@ -286,7 +285,9 @@ $("#cv").addEventListener("click",function(ev){var T=ptrT(ev.clientX);if(T==null
 $("#cv").addEventListener("mousemove",function(ev){if(!inspect)return;var T=ptrT(ev.clientX);if(T==null)return;var ns=nearestStop(T);if(ns!=null&&ns!==cursorT){cursorT=ns;updateHero();draw();}});
 
 var rt;window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(draw,120);});
-try{var es=new EventSource("/theme/events");es.onmessage=function(){var l=$("#omarchy-theme");l.href="/theme/omarchy.css?"+Date.now();setTimeout(draw,200);};}catch(e){}
+function saveTheme(){try{var v={};for(var i=0;i<document.styleSheets.length;i++){var sh=document.styleSheets[i];if(!sh.href||sh.href.indexOf("/theme/omarchy.css")<0)continue;var rs=sh.cssRules;for(var j=0;j<rs.length;j++){var st=rs[j].style;if(!st)continue;for(var n=0;n<st.length;n++){var k=st[n];if(k.indexOf("--omarchy-")===0)v[k]=st.getPropertyValue(k).trim();}}}if(Object.keys(v).length)localStorage.setItem("airq.theme",JSON.stringify({v:v,cs:v["--omarchy-mode"]==="light"?"light":"dark"}));}catch(e){}}
+setTimeout(saveTheme,1500);
+try{var es=new EventSource("/theme/events");es.onmessage=function(){var l=document.getElementById("omarchy-theme");l.onload=function(){l.media="all";var c=document.getElementById("theme-cache");if(c)c.remove();draw();saveTheme();};l.href="/theme/omarchy.css?"+Date.now();};}catch(e){}
 
 load();
 setInterval(function(){load();},60000);
